@@ -3,7 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 app.post("/api/chat", async (req, res) => {
@@ -15,11 +15,11 @@ app.post("/api/chat", async (req, res) => {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await response.json();
-    if (!response.ok) return res.status(500).json({ error: "Gemini error" });
+    if (!response.ok) { console.error("Gemini error:", JSON.stringify(data)); return res.status(500).json({ error: "Gemini error", details: data }); }
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, no response.";
     res.json({ reply });
   } catch (err) {
-    console.error(err);
+    console.error("Server error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
