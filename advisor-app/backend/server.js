@@ -10,13 +10,24 @@ app.post("/api/chat", async (req, res) => {
   const { messages, systemPrompt } = req.body;
   if (!messages || !systemPrompt) return res.status(400).json({ error: "Missing fields" });
   try {
-    const geminiMessages = messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
-    const body = { system_instruction: { parts: [{ text: systemPrompt }] }, contents: geminiMessages, generationConfig: { maxOutputTokens: 1024 } };
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages.map(m => ({ role: m.role === "ai" ? "assistant" : m.role, content: m.content }))
+        ],
+        max_tokens: 1024
+      })
+    });
     const data = await response.json();
-    if (!response.ok) { console.error("Gemini error:", JSON.stringify(data)); return res.status(500).json({ error: "Gemini error", details: data }); }
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, no response.";
+    if (!response.ok) { console.error("Groq error:", JSON.stringify(data)); return res.status(500).json({ error: "Groq error" }); }
+    const reply = data.choices?.[0]?.message?.content || "Sorry, no response.";
     res.json({ reply });
   } catch (err) {
     console.error("Server error:", err);
