@@ -383,3 +383,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .sp-qr-wrap { display: flex; justify-content: center; margin-bottom: 8px; }
 .sp-qr { width: 160px; height: 160px; border-radius: 10px; border: 3px solid #fff; }
 .sp-gcash-hint { font-size: 11px; color: #555565; }
+
+/* ── SUPPORT DRAWER ── */
+.support-drawer {
+  background: #13131a; border: 1px solid #2a2a40; border-radius: 24px;
+  padding: 28px 24px; max-width: 400px; width: 100%;
+  box-shadow: 0 20px 70px rgba(0,0,0,.7); position: relative;
+  max-height: 90vh; overflow-y: auto;
+}
+.sd-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; color: #555; font-size: 18px; cursor: pointer;
+}
+.sd-close:hover { color: #e8e8e6; }
+.sd-top { text-align: center; margin-bottom: 20px; }
+.sd-emoji { font-size: 36px; margin-bottom: 10px; }
+.sd-title { font-size: 18px; font-weight: 700; color: #e8e8e6; margin-bottom: 10px; }
+.sd-body { font-size: 13px; color: #777788; line-height: 1.7; }
+.sd-methods { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+.sd-gcash {
+  background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 16px;
+  padding: 16px; text-align: center;
+}
+.sd-gcash-title { font-size: 14px; font-weight: 700; color: #4caf50; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.sd-tag { font-size: 10px; background: rgba(76,175,80,.15); border: 1px solid rgba(76,175,80,.3); color: #4caf50; border-radius: 99px; padding: 2px 8px; font-weight: 500; }
+.sd-qr {
+  width: 180px; height: 180px; border-radius: 12px;
+  border: 3px solid #fff; display: block; margin: 0 auto 10px;
+}
+.sd-gcash-hint { font-size: 12px; color: #4caf50; opacity: .8; }
+.sd-divider { text-align: center; font-size: 12px; color: #333345; position: relative; }
+.sd-divider::before,.sd-divider::after { content:""; position:absolute; top:50%; width:45%; height:1px; background:#1c1c28; }
+.sd-divider::before { left:0; } .sd-divider::after { right:0; }
+.sd-kofi {
+  display: block; padding: 13px 24px; border-radius: 12px;
+  background: #1a1008; border: 1px solid #7a4500;
+  color: #f0a030; font-size: 14px; font-weight: 600;
+  text-decoration: none; text-align: center; transition: all .15s;
+}
+.sd-kofi:hover { background: #251508; box-shadow: 0 4px 20px rgba(240,160,48,.25); }
+.sd-footer { font-size: 12px; color: #333345; text-align: center; }

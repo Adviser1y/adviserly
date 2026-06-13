@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import HomePage from "./components/HomePage";
 import ChatPage from "./components/ChatPage";
-import SupportPopup from "./components/SupportPopup";
+import SupportPopup, { SupportDrawer } from "./components/SupportPopup";
 import FeatureTour from "./components/FeatureTour";
 import TermsPage from "./components/TermsPage";
 import UsageTracker from "./components/UsageTracker";
@@ -20,6 +20,7 @@ export default function App() {
   const [langOpen, setLangOpen] = useState(false);
   const [totalMessages, setTotalMessages] = useState(0);
   const [showSupport, setShowSupport] = useState(false);
+  const [showSupportDrawer, setShowSupportDrawer] = useState(false);
   const [showTour, setShowTour] = useState(() => !localStorage.getItem("adv_tour_done"));
   const [showTerms, setShowTerms] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
@@ -41,10 +42,8 @@ export default function App() {
   function handleShare() {
     const text = "Check out Adviserly — a free AI advisor for health, money, fitness, coding & more! 🚀";
     const url = "https://adviserly.vercel.app";
-    if (navigator.share) { navigator.share({ title:"Adviserly — AI Advisor", text, url }); }
-    else {
-      navigator.clipboard.writeText(`${text}\n${url}`).then(() => alert("Link copied to clipboard!"));
-    }
+    if (navigator.share) navigator.share({ title:"Adviserly", text, url });
+    else navigator.clipboard.writeText(`${text}\n${url}`).then(() => alert("Link copied!"));
   }
 
   if (showTerms) return <TermsPage onBack={() => setShowTerms(false)} />;
@@ -55,7 +54,7 @@ export default function App() {
         <div className="logo"><div className="logo-icon">✦</div>Adviserly</div>
         <div className="topbar-right">
           <button className="tb-icon-btn" onClick={() => setShowUsage(true)} title="Usage Stats">📊</button>
-          <button className="tb-icon-btn" onClick={handleShare} title="Share Adviserly">🔗</button>
+          <button className="tb-icon-btn" onClick={handleShare} title="Share">🔗</button>
           <div className="lang-selector" ref={langRef}>
             <button className="lang-btn" onClick={() => setLangOpen(o => !o)}>🌐 {currentLang.label} {langOpen?"▲":"▼"}</button>
             {langOpen && (
@@ -67,7 +66,7 @@ export default function App() {
               </div>
             )}
           </div>
-          <a href="https://ko-fi.com/adviserly" target="_blank" rel="noreferrer" className="support-topbtn">☕ Support</a>
+          <button className="support-topbtn" onClick={() => setShowSupportDrawer(true)}>☕ Support</button>
         </div>
       </div>
 
@@ -78,13 +77,14 @@ export default function App() {
 
       {showTour && <FeatureTour onDismiss={() => { localStorage.setItem("adv_tour_done","1"); setShowTour(false); }} />}
       {showSupport && <SupportPopup lang={lang} onDismiss={() => { localStorage.setItem("adv_support_dismissed","true"); setShowSupport(false); }} />}
+      {showSupportDrawer && <SupportDrawer onClose={() => setShowSupportDrawer(false)} />}
       {showUsage && <UsageTracker onClose={() => setShowUsage(false)} />}
 
-      {/* Floating support - positioned away from send button */}
-      <a href="https://ko-fi.com/adviserly" target="_blank" rel="noreferrer" className="float-coffee" title="Support this project ☕">
+      {/* Floating coffee button — opens drawer */}
+      <button className="float-coffee" onClick={() => setShowSupportDrawer(true)} title="Support Adviserly">
         <span className="float-full">☕ Support</span>
         <span className="float-short">☕</span>
-      </a>
+      </button>
     </div>
   );
 }
