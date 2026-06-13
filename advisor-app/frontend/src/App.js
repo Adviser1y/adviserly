@@ -2,21 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import HomePage from "./components/HomePage";
 import ChatPage from "./components/ChatPage";
 import SupportPopup from "./components/SupportPopup";
+import FeatureTour from "./components/FeatureTour";
+import TermsPage from "./components/TermsPage";
+import UsageTracker from "./components/UsageTracker";
 import "./App.css";
 
 const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "tl", label: "Tagalog" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "hi", label: "हिन्दी" },
-  { code: "ar", label: "العربية" },
-  { code: "pt", label: "Português" },
-  { code: "id", label: "Bahasa Indonesia" },
-  { code: "ja", label: "日本語" },
-  { code: "ko", label: "한국어" },
-  { code: "zh", label: "中文" },
-  { code: "de", label: "Deutsch" },
+  { code:"en", label:"English" }, { code:"tl", label:"Tagalog" }, { code:"es", label:"Español" },
+  { code:"fr", label:"Français" }, { code:"hi", label:"हिन्दी" }, { code:"ar", label:"العربية" },
+  { code:"pt", label:"Português" }, { code:"id", label:"Bahasa Indonesia" },
+  { code:"ja", label:"日本語" }, { code:"ko", label:"한국어" }, { code:"zh", label:"中文" }, { code:"de", label:"Deutsch" },
 ];
 
 export default function App() {
@@ -25,44 +20,49 @@ export default function App() {
   const [langOpen, setLangOpen] = useState(false);
   const [totalMessages, setTotalMessages] = useState(0);
   const [showSupport, setShowSupport] = useState(false);
+  const [showTour, setShowTour] = useState(() => !localStorage.getItem("adv_tour_done"));
+  const [showTerms, setShowTerms] = useState(false);
+  const [showUsage, setShowUsage] = useState(false);
   const langRef = useRef(null);
 
   useEffect(() => { localStorage.setItem("adv_lang", lang); }, [lang]);
-
   useEffect(() => {
     const dismissed = localStorage.getItem("adv_support_dismissed");
     if (!dismissed && totalMessages >= 25) setShowSupport(true);
   }, [totalMessages]);
-
   useEffect(() => {
-    function handleClick(e) {
-      if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false);
-    }
+    function handleClick(e) { if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false); }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
 
+  function handleShare() {
+    const text = "Check out Adviserly — a free AI advisor for health, money, fitness, coding & more! 🚀";
+    const url = "https://adviserly.vercel.app";
+    if (navigator.share) { navigator.share({ title:"Adviserly — AI Advisor", text, url }); }
+    else {
+      navigator.clipboard.writeText(`${text}\n${url}`).then(() => alert("Link copied to clipboard!"));
+    }
+  }
+
+  if (showTerms) return <TermsPage onBack={() => setShowTerms(false)} />;
+
   return (
     <div className="app">
       <div className="topbar">
-        <div className="logo">
-          <div className="logo-icon">✦</div>
-          Adviserly
-        </div>
+        <div className="logo"><div className="logo-icon">✦</div>Adviserly</div>
         <div className="topbar-right">
+          <button className="tb-icon-btn" onClick={() => setShowUsage(true)} title="Usage Stats">📊</button>
+          <button className="tb-icon-btn" onClick={handleShare} title="Share Adviserly">🔗</button>
           <div className="lang-selector" ref={langRef}>
-            <button className="lang-btn" onClick={() => setLangOpen(o => !o)}>
-              🌐 {currentLang.label} {langOpen ? "▲" : "▼"}
-            </button>
+            <button className="lang-btn" onClick={() => setLangOpen(o => !o)}>🌐 {currentLang.label} {langOpen?"▲":"▼"}</button>
             {langOpen && (
               <div className="lang-dropdown">
                 {LANGUAGES.map(l => (
-                  <button key={l.code} className={`lang-opt${l.code === lang ? " active" : ""}`}
-                    onClick={() => { setLang(l.code); setLangOpen(false); }}>
-                    {l.label}
-                  </button>
+                  <button key={l.code} className={`lang-opt${l.code===lang?" active":""}`}
+                    onClick={() => { setLang(l.code); setLangOpen(false); }}>{l.label}</button>
                 ))}
               </div>
             )}
@@ -72,16 +72,18 @@ export default function App() {
       </div>
 
       {selectedCat
-        ? <ChatPage lang={lang} initialCat={selectedCat} onHome={() => setSelectedCat(null)} onMessageSent={() => setTotalMessages(n => n + 1)} />
-        : <HomePage lang={lang} onSelectCat={setSelectedCat} onMessageSent={() => setTotalMessages(n => n + 1)} />
+        ? <ChatPage lang={lang} initialCat={selectedCat} onHome={() => setSelectedCat(null)} onMessageSent={() => setTotalMessages(n => n+1)} />
+        : <HomePage lang={lang} onSelectCat={setSelectedCat} onMessageSent={() => setTotalMessages(n => n+1)} onShowTerms={() => setShowTerms(true)} onShowTour={() => setShowTour(true)} />
       }
 
+      {showTour && <FeatureTour onDismiss={() => { localStorage.setItem("adv_tour_done","1"); setShowTour(false); }} />}
       {showSupport && <SupportPopup lang={lang} onDismiss={() => { localStorage.setItem("adv_support_dismissed","true"); setShowSupport(false); }} />}
+      {showUsage && <UsageTracker onClose={() => setShowUsage(false)} />}
 
-      {/* Floating support button */}
-      <a href="https://ko-fi.com/adviserly" target="_blank" rel="noreferrer" className="float-coffee" title="Support this project ☕ (helps cover AI API costs)">
-        <span className="float-coffee-full">☕ Support</span>
-        <span className="float-coffee-short">☕</span>
+      {/* Floating support - positioned away from send button */}
+      <a href="https://ko-fi.com/adviserly" target="_blank" rel="noreferrer" className="float-coffee" title="Support this project ☕">
+        <span className="float-full">☕ Support</span>
+        <span className="float-short">☕</span>
       </a>
     </div>
   );

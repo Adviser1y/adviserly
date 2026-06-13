@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { CATEGORIES, SECTIONS, EXPERT_MODES, EXPERT_PROMPTS, LEARNING_PATHS, CATEGORY_TOOLS, DAILY_INSIGHTS } from "../categories";
+import { recordMessage } from "./UsageTracker";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 const GREETINGS = ["hi","hey","hello","kumusta","kamusta","sup","yo","hi po","hey po","good morning","good afternoon","good evening","magandang umaga","magandang hapon","magandang gabi"];
@@ -269,13 +270,13 @@ export default function ChatPage({ lang, initialCat, onHome, onMessageSent }) {
 
     if (!isFollowUpShown() && !skipFollowUp && !isGreeting(text)) {
       const opts = FOLLOWUP_OPTIONS[cat.id];
-      if (opts) { updateMessages(newMsgs); setCurrentHistory(newHistory); setFollowUpModal(opts); onMessageSent&&onMessageSent(); scrollToBottom(); return; }
+      if (opts) { updateMessages(newMsgs); setCurrentHistory(newHistory); setFollowUpModal(opts); onMessageSent&&onMessageSent(); recordMessage(cat.id); scrollToBottom(); return; }
       setFollowUpShown(true);
     }
 
     updateMessages([...newMsgs, { role:"thinking", text: lang==="tl"?"Nag-iisip...":"Thinking..." }]);
     setCurrentHistory(newHistory);
-    setLoading(true); scrollToBottom(); onMessageSent&&onMessageSent();
+    setLoading(true); scrollToBottom(); onMessageSent&&onMessageSent(); recordMessage(cat.id);
 
     let reply = "";
     updateMessages(prev => [...prev.filter(m=>m.role!=="thinking"), { role:"ai", text:"", streaming:true }]);
@@ -285,7 +286,7 @@ export default function ChatPage({ lang, initialCat, onHome, onMessageSent }) {
       (full) => {
         updateMessages(prev=>{ const c=[...prev]; const last=c[c.length-1]; if(last?.streaming) c[c.length-1]={...last,streaming:false}; return c; });
         setCurrentHistory([...newHistory, { role:"assistant", content:full }]);
-        onMessageSent&&onMessageSent();
+        onMessageSent&&onMessageSent(); recordMessage(cat.id);
 
         // Speak if voice mode on
         if (voiceOn && synthRef.current) {
